@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Ambulance Traffic Priority System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            margin: 0;
+            padding: 20px;
+            color: white;
+            overflow: hidden;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #fff;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .simulation-area {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background-color: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .road {
+            position: absolute;
+            background-color: #555;
+        }
+        
+        .horizontal-road {
+            width: 100%;
+            height: 60px;
+        }
+        
+        .vertical-road {
+            width: 60px;
+            height: 100%;
+        }
+        
+        .intersection {
+            position: absolute;
+            background-color: #444;
+            border-radius: 5px;
+        }
+        
+        .traffic-light {
+            position: absolute;
+            width: 30px;
+            height: 80px;
+            background-color: #222;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 5px;
+        }
+        
+        .light {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin: 0 auto;
+            opacity: 0.3;
+        }
+        
+        .red { background-color: red; }
+        .yellow { background-color: yellow; }
+        .green { background-color: lime; }
+        
+        .active { opacity: 1; box-shadow: 0 0 10px 2px currentColor; }
+        
+        .ambulance {
+            position: absolute;
+            width: 60px;
+            height: 30px;
+            background-color: white;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: red;
+            transition: left 0.5s linear, top 0.5s linear;
+            z-index: 10;
+        }
+        
+        .ambulance:before {
+            content: "AMBULANCE";
+            font-size: 8px;
+            position: absolute;
+            top: -15px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .ambulance:after {
+            content: "🚑";
+            font-size: 20px;
+        }
+        
+        .siren {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: red;
+            border-radius: 50%;
+            top: -5px;
+            left: 5px;
+            animation: siren 0.5s alternate infinite;
+        }
+        
+        @keyframes siren {
+            0% { background-color: red; }
+            100% { background-color: blue; }
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .status {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 20px;
+            min-height: 27px;
+        }
+        
+        .explanation {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .route-highlight {
+            position: absolute;
+            background-color: rgba(255, 255, 0, 0.3);
+            z-index: 1;
+            transition: all 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Emergency Ambulance Traffic Light Priority System</h1>
+        
+        <div class="status" id="status">System ready. Click "Dispatch Ambulance" to begin simulation.</div>
+        
+        <div class="controls">
+            <button id="dispatchBtn">Dispatch Ambulance</button>
+            <button id="resetBtn">Reset Simulation</button>
+        </div>
+        
+        <div class="simulation-area" id="simulationArea">
+            <!-- Roads will be added here by JavaScript -->
+            <!-- Traffic lights will be added here by JavaScript -->
+            <!-- Ambulance will be added here by JavaScript -->
+        </div>
+        
+        <div class="explanation">
+            <h3>How It Works:</h3>
+            <p>When an ambulance is dispatched in emergency mode:</p>
+            <ol>
+                <li>The system detects the ambulance's location and planned route</li>
+                <li>All traffic lights along the ambulance's path turn green</li>
+                <li>All perpendicular traffic lights turn red</li>
+                <li>The system maintains this configuration until the ambulance passes each intersection</li>
+                <li>Normal traffic light operation resumes after the ambulance clears the area</li>
+            </ol>
+            <p>This system reduces emergency response times and improves safety by creating a clear path for emergency vehicles.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const simulationArea = document.getElementById('simulationArea');
+            const dispatchBtn = document.getElementById('dispatchBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const statusEl = document.getElementById('status');
+            
+            // Simulation constants
+            const ROAD_WIDTH = 60;
+            const INTERSECTION_SIZE = 60;
+            const LIGHT_OFFSET = 15;
+            
+            // Create a grid of roads and intersections
+            const roads = [];
+            const intersections = [];
+            const trafficLights = [];
+            let ambulance = null;
+            let routeHighlight = null;
+            let simulationInterval = null;
+            let currentPathIndex = 0;
+            
+            // Define the ambulance path (intersection indices)
+            const ambulancePath = [
+                {x: 0, y: 2}, {x: 1, y: 2}, {x: 2, y: 2}, {x: 3, y: 2}, 
+                {x: 3, y: 1}, {x: 3, y: 0}
+            ];
+            
+            // Initialize the simulation
+            function initSimulation() {
+                clearSimulation();
+                createRoadsAndIntersections();
+                createTrafficLights();
+                updateStatus("System ready. Click 'Dispatch Ambulance' to begin simulation.");
+            }
+            
+            // Clear the simulation
+            function clearSimulation() {
+                // Clear any existing elements
+                simulationArea.innerHTML = '';
+                roads.length = 0;
+                intersections.length = 0;
+                trafficLights.length = 0;
+                ambulance = null;
+                routeHighlight = null;
+                
+                if (simulationInterval) {
+                    clearInterval(simulationInterval);
+                    simulationInterval = null;
+                }
+                
+                currentPathIndex = 0;
+            }
+            
+            // Create roads and intersections
+            function createRoadsAndIntersections() {
+                // Create horizontal roads
+                for (let y = 0; y < 3; y++) {
+                    for (let x = 0; x < 4; x++) {
+                        const road = document.createElement('div');
+                        road.className = 'road horizontal-road';
+                        road.style.left = '0';
+                        road.style.top = `${100 + y * 150}px`;
+                        simulationArea.appendChild(road);
+                        roads.push(road);
+                    }
+                }
+                
+                // Create vertical roads
+                for (let x = 0; x < 4; x++) {
+                    for (let y = 0; y < 3; y++) {
+                        const road = document.createElement('div');
+                        road.className = 'road vertical-road';
+                        road.style.left = `${100 + x * 150}px`;
+                        road.style.top = '0';
+                        simulationArea.appendChild(road);
+                        roads.push(road);
+                    }
+                }
+                
+                // Create intersections
+                for (let x = 0; x < 4; x++) {
+                    for (let y = 0; y < 3; y++) {
+                        const intersection = document.createElement('div');
+                        intersection.className = 'intersection';
+                        intersection.style.width = `${INTERSECTION_SIZE}px`;
+                        intersection.style.height = `${INTERSECTION_SIZE}px`;
+                        intersection.style.left = `${100 + x * 150 - INTERSECTION_SIZE/2}px`;
+                        intersection.style.top = `${100 + y * 150 - INTERSECTION_SIZE/2}px`;
+                        intersection.dataset.x = x;
+                        intersection.dataset.y = y;
+                        simulationArea.appendChild(intersection);
+                        intersections.push(intersection);
+                    }
+                }
+            }
+            
+            // Create traffic lights
+            function createTrafficLights() {
+                // Create traffic lights for each intersection
+                intersections.forEach(intersection => {
+                    const x = parseInt(intersection.dataset.x);
+                    const y = parseInt(intersection.dataset.y);
+                    
+                    // North light
+                    const northLight = createTrafficLight(
+                        parseInt(intersection.style.left) + INTERSECTION_SIZE/2 - 15,
+                        parseInt(intersection.style.top) - 80,
+                        'north'
+                    );
+                    northLight.dataset.x = x;
+                    northLight.dataset.y = y;
+                    northLight.dataset.direction = 'north';
+                    trafficLights.push(northLight);
+                    
+                    // South light
+                    const southLight = createTrafficLight(
+                        parseInt(intersection.style.left) + INTERSECTION_SIZE/2 - 15,
+                        parseInt(intersection.style.top) + INTERSECTION_SIZE,
+                        'south'
+                    );
+                    southLight.dataset.x = x;
+                    southLight.dataset.y = y;
+                    southLight.dataset.direction = 'south';
+                    trafficLights.push(southLight);
+                    
+                    // West light
+                    const westLight = createTrafficLight(
+                        parseInt(intersection.style.left) - 30,
+                        parseInt(intersection.style.top) + INTERSECTION_SIZE/2 - 15,
+                        'west'
+                    );
+                    westLight.dataset.x = x;
+                    westLight.dataset.y = y;
+                    westLight.dataset.direction = 'west';
+                    trafficLights.push(westLight);
+                    
+                    // East light
+                    const eastLight = createTrafficLight(
+                        parseInt(intersection.style.left) + INTERSECTION_SIZE,
+                        parseInt(intersection.style.top) + INTERSECTION_SIZE/2 - 15,
+                        'east'
+                    );
+                    eastLight.dataset.x = x;
+                    eastLight.dataset.y = y;
+                    eastLight.dataset.direction = 'east';
+                    trafficLights.push(eastLight);
+                });
+                
+                // Start with random light states
+                setRandomLightStates();
+            }
+            
+            // Create a single traffic light
+            function createTrafficLight(left, top, direction) {
+                const light = document.createElement('div');
+                light.className = 'traffic-light';
+                light.style.left = `${left}px`;
+                light.style.top = `${top}px`;
+                
+                // Rotate vertical lights
+                if (direction === 'north' || direction === 'south') {
+                    light.style.transform = 'rotate(90deg)';
+                    light.style.transformOrigin = '15px 40px';
+                }
+                
+                // Create lights
+                const redLight = document.createElement('div');
+                redLight.className = 'light red';
+                light.appendChild(redLight);
+                
+                const yellowLight = document.createElement('div');
+                yellowLight.className = 'light yellow';
+                light.appendChild(yellowLight);
+                
+                const greenLight = document.createElement('div');
+                greenLight.className = 'light green';
+                light.appendChild(greenLight);
+                
+                simulationArea.appendChild(light);
+                return light;
+            }
+            
+            // Set random light states (for initial setup)
+            function setRandomLightStates() {
+                trafficLights.forEach(light => {
+                    const lights = light.querySelectorAll('.light');
+                    lights.forEach(l => l.classList.remove('active'));
+                    
+                    // Randomly select a light to activate (red, yellow, or green)
+                    const randomIndex = Math.floor(Math.random() * 3);
+                    lights[randomIndex].classList.add('active');
+                });
+            }
+            
+            // Dispatch the ambulance
+            function dispatchAmbulance() {
+                if (ambulance || simulationInterval) return;
+                
+                // Create the ambulance
+                ambulance = document.createElement('div');
+                ambulance.className = 'ambulance';
+                
+                // Create siren
+                const siren = document.createElement('div');
+                siren.className = 'siren';
+                ambulance.appendChild(siren);
+                
+                simulationArea.appendChild(ambulance);
+                
+                // Create route highlight
+                routeHighlight = document.createElement('div');
+                routeHighlight.className = 'route-highlight';
+                simulationArea.appendChild(routeHighlight);
+                updateRouteHighlight();
+                
+                // Position ambulance at start of path
+                const startPos = getIntersectionPosition(ambulancePath[0].x, ambulancePath[0].y);
+                ambulance.style.left = `${startPos.left - 30}px`;
+                ambulance.style.top = `${startPos.top - 15}px`;
+                
+                updateStatus("Ambulance dispatched! Activating emergency traffic light priority...");
+                
+                // Start the simulation
+                currentPathIndex = 0;
+                simulationInterval = setInterval(moveAmbulance, 1500);
+                
+                // Immediately set the lights for the first position
+                updateTrafficLightsForAmbulance();
+            }
+            
+            // Move the ambulance along its path
+            function moveAmbulance() {
+                currentPathIndex++;
+                
+                if (currentPathIndex >= ambulancePath.length) {
+                    // Ambulance has reached its destination
+                    clearInterval(simulationInterval);
+                    simulationInterval = null;
+                    updateStatus("Ambulance has reached its destination. Resetting traffic lights to normal operation.");
+                    
+                    // Reset lights after delay
+                    setTimeout(() => {
+                        setRandomLightStates();
+                        updateStatus("System ready. Click 'Dispatch Ambulance' to begin another simulation.");
+                    }, 3000);
+                    
+                    return;
+                }
+                
+                const currentPos = ambulancePath[currentPathIndex];
+                const pos = getIntersectionPosition(currentPos.x, currentPos.y);
+                
+                ambulance.style.left = `${pos.left - 30}px`;
+                ambulance.style.top = `${pos.top - 15}px`;
+                
+                updateRouteHighlight();
+                updateTrafficLightsForAmbulance();
+                
+                updateStatus(`Ambulance passing through intersection (${currentPos.x}, ${currentPos.y})...`);
+            }
+            
+            // Update traffic lights based on ambulance position
+            function updateTrafficLightsForAmbulance() {
+                if (currentPathIndex >= ambulancePath.length) return;
+                
+                const currentPos = ambulancePath[currentPathIndex];
+                const nextPos = currentPathIndex < ambulancePath.length - 1 ? ambulancePath[currentPathIndex + 1] : null;
+                
+                // Determine the direction the ambulance is coming from and going to
+                let fromDirection = '';
+                let toDirection = '';
+                
+                if (currentPathIndex > 0) {
+                    const prevPos = ambulancePath[currentPathIndex - 1];
+                    if (prevPos.x < currentPos.x) fromDirection = 'west';
+                    else if (prevPos.x > currentPos.x) fromDirection = 'east';
+                    else if (prevPos.y < currentPos.y) fromDirection = 'north';
+                    else if (prevPos.y > currentPos.y) fromDirection = 'south';
+                }
+                
+                if (nextPos) {
+                    if (nextPos.x > currentPos.x) toDirection = 'east';
+                    else if (nextPos.x < currentPos.x) toDirection = 'west';
+                    else if (nextPos.y > currentPos.y) toDirection = 'south';
+                    else if (nextPos.y < currentPos.y) toDirection = 'north';
+                }
+                
+                // Update all traffic lights
+                trafficLights.forEach(light => {
+                    const lightX = parseInt(light.dataset.x);
+                    const lightY = parseInt(light.dataset.y);
+                    const lightDirection = light.dataset.direction;
+                    const lights = light.querySelectorAll('.light');
+                    
+                    // Turn off all lights first
+                    lights.forEach(l => l.classList.remove('active'));
+                    
+                    // Check if this light is along the ambulance's path
+                    const isOnPath = ambulancePath.some(pos => pos.x === lightX && pos.y === lightY);
+                    
+                    if (isOnPath && lightX === currentPos.x && lightY === currentPos.y) {
+                        // Current intersection - give priority based on ambulance direction
+                        if ((fromDirection === 'north' || toDirection === 'south') && 
+                            (lightDirection === 'north' || lightDirection === 'south')) {
+                            // Ambulance going north-south - set north-south lights to green
+                            lights[2].classList.add('active'); // Green
+                        } 
+                        else if ((fromDirection === 'west' || toDirection === 'east') && 
+                                (lightDirection === 'west' || lightDirection === 'east')) {
+                            // Ambulance going west-east - set west-east lights to green
+                            lights[2].classList.add('active'); // Green
+                        } 
+                        else {
+                            // Perpendicular direction - set to red
+                            lights[0].classList.add('active'); // Red
+                        }
+                    } 
+                    else if (isOnPath) {
+                        // Along path but not current intersection - set to green for path direction
+                        const pathIndex = ambulancePath.findIndex(pos => pos.x === lightX && pos.y === lightY);
+                        const nextPathPos = pathIndex < ambulancePath.length - 1 ? ambulancePath[pathIndex + 1] : null;
+                        const prevPathPos = pathIndex > 0 ? ambulancePath[pathIndex - 1] : null;
+                        
+                        let pathDirection = '';
+                        if (nextPathPos) {
+                            if (nextPathPos.x > lightX) pathDirection = 'east';
+                            else if (nextPathPos.x < lightX) pathDirection = 'west';
+                            else if (nextPathPos.y > lightY) pathDirection = 'south';
+                            else if (nextPathPos.y < lightY) pathDirection = 'north';
+                        } else if (prevPathPos) {
+                            if (prevPathPos.x < lightX) pathDirection = 'east';
+                            else if (prevPathPos.x > lightX) pathDirection = 'west';
+                            else if (prevPathPos.y < lightY) pathDirection = 'south';
+                            else if (prevPathPos.y > lightY) pathDirection = 'north';
+                        }
+                        
+                        if ((pathDirection === 'north' || pathDirection === 'south') && 
+                            (lightDirection === 'north' || lightDirection === 'south')) {
+                            lights[2].classList.add('active'); // Green
+                        } 
+                        else if ((pathDirection === 'west' || pathDirection === 'east') && 
+                                (lightDirection === 'west' || lightDirection === 'east')) {
+                            lights[2].classList.add('active'); // Green
+                        } 
+                        else {
+                            lights[0].classList.add('active'); // Red
+                        }
+                    } 
+                    else {
+                        // Not on path - set to red
+                        lights[0].classList.add('active'); // Red
+                    }
+                });
+            }
+            
+            // Get the position of an intersection
+            function getIntersectionPosition(x, y) {
+                const intersection = intersections.find(
+                    el => parseInt(el.dataset.x) === x && parseInt(el.dataset.y) === y
+                );
+                
+                if (intersection) {
+                    return {
+                        left: parseInt(intersection.style.left) + INTERSECTION_SIZE/2,
+                        top: parseInt(intersection.style.top) + INTERSECTION_SIZE/2
+                    };
+                }
+                
+                return { left: 0, top: 0 };
+            }
+            
+            // Update the route highlight
+            function updateRouteHighlight() {
+                if (!routeHighlight || currentPathIndex >= ambulancePath.length) return;
+                
+                // Get current and next positions
+                const currentPos = ambulancePath[currentPathIndex];
+                const nextPos = currentPathIndex < ambulancePath.length - 1 ? ambulancePath[currentPathIndex + 1] : currentPos;
+                
+                const current = getIntersectionPosition(currentPos.x, currentPos.y);
+                const next = getIntersectionPosition(nextPos.x, nextPos.y);
+                
+                // Determine the highlight position and dimensions
+                if (currentPos.x === nextPos.x) {
+                    // Vertical movement
+                    const minTop = Math.min(current.top, next.top);
+                    const height = Math.abs(next.top - current.top) + ROAD_WIDTH;
+                    
+                    routeHighlight.style.left = `${current.left - ROAD_WIDTH/2}px`;
+                    routeHighlight.style.top = `${minTop - ROAD_WIDTH/2}px`;
+                    routeHighlight.style.width = `${ROAD_WIDTH}px`;
+                    routeHighlight.style.height = `${height}px`;
+                } else {
+                    // Horizontal movement
+                    const minLeft = Math.min(current.left, next.left);
+                    const width = Math.abs(next.left - current.left) + ROAD_WIDTH;
+                    
+                    routeHighlight.style.left = `${minLeft - ROAD_WIDTH/2}px`;
+                    routeHighlight.style.top = `${current.top - ROAD_WIDTH/2}px`;
+                    routeHighlight.style.width = `${width}px`;
+                    routeHighlight.style.height = `${ROAD_WIDTH}px`;
+                }
+            }
+            
+            // Update status message
+            function updateStatus(message) {
+                statusEl.textContent = message;
+            }
+            
+            // Event listeners
+            dispatchBtn.addEventListener('click', dispatchAmbulance);
+            resetBtn.addEventListener('click', initSimulation);
+            
+            // Initialize the simulation
+            initSimulation();
+        });
+    </script>
+</body>
+</html>
