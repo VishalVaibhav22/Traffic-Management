@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Flow Analytics</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .navbar {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .navbar h1 {
+            font-size: 1.5rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 0.75rem;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-color: #3498db;
+        }
+        
+        .nav-links a.active {
+            border-color: #3498db;
+            background-color: rgba(52, 152, 219, 0.2);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        .chart-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .chart-title {
+            font-size: 1.25rem;
+            color: #2c3e50;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card p {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .improvement {
+            color: #27ae60;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .table-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        table th, table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        table th {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        table tr:hover {
+            background-color: #f1f5f9;
+        }
+        
+        .success-story {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .success-story h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        
+        .testimonial {
+            font-style: italic;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            margin: 1rem 0;
+        }
+        
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .impact-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            transition: transform 0.3s;
+        }
+        
+        .impact-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .impact-card h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .impact-card h3 span {
+            color: white;
+            background-color: #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .impact-card p {
+            color: #7f8c8d;
+            margin-bottom: 0.5rem;
+        }
+        
+        .economic-benefit {
+            font-weight: bold;
+            color: #27ae60;
+        }
+        
+        @media (min-width: 768px) {
+            .dashboard {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .full-width {
+                grid-column: 1 / -1;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .nav-links a {
+                padding: 0.5rem;
+            }
+            
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }
+        
+        /* Tab System */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab-btn {
+            padding: 0.75rem 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #7f8c8d;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn:hover {
+            color: #3498db;
+        }
+        
+        .tab-btn.active {
+            color: #3498db;
+            border-bottom-color: #3498db;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>Traffic Management System</h1>
+        <div class="nav-links">
+            <a href="#" class="active" onclick="showPage('traffic-page')">Traffic Flow</a>
+            <a href="#" onclick="showPage('pollution-page')">Pollution Data</a>
+            <a href="#" onclick="showPage('emergency-page')">Emergency Response</a>
+            <a href="#" onclick="showPage('health-page')">Health Impact</a>
+            <a href="#" onclick="showPage('economic-page')">Economic Benefits</a>
+        </div>
+    </nav>
+
+    <!-- Traffic Flow Page -->
+    <div id="traffic-page" class="page active">
+        <div class="container">
+            <div class="header">
+                <h1>Traffic Flow Analytics</h1>
+                <p>Analyzing the impact of AI-driven traffic management systems</p>
+            </div>
+            
+            <div class="summary-stats">
+                <div class="stat-card">
+                    <h3>27%</h3>
+                    <p>Average Traffic Flow Improvement</p>
+                </div>
+                <div class="stat-card">
+                    <h3>42%</h3>
+                    <p>Reduced Waiting Time</p>
+                </div>
+                <div class="stat-card">
+                    <h3>18%</h3>
+                    <p>Decreased Congestion</p>
+                </div>
+                <div class="stat-card">
+                    <h3>32%</h3>
+                    <p>Improved Traffic Prediction Accuracy</p>
+                </div>
+            </div>
+            
+            <div class="dashboard">
+                <div class="chart-container full-width">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Traffic Flow Comparison</h2>
+                    </div>
+                    <canvas id="trafficFlowChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Average Waiting Time</h2>
+                    </div>
+                    <canvas id="waitingTimeChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Peak Hour Traffic Distribution</h2>
+                    </div>
+                    <canvas id="peakHourChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="success-story">
+                <h3>Success Story: Downtown Corridor</h3>
+                <p>The implementation of AI traffic management along the main downtown corridor has resulted in a significant improvement in traffic flow during peak hours.</p>
+                <div class="testimonial">
+                    "My daily commute used to take 45 minutes during rush hour. With the new AI traffic system, it's down to just 28 minutes. The difference is remarkable." - John D., Daily Commuter
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pollution Data Page -->
+    <div id="pollution-page" class="page">
+        <div class="container">
+            <div class="header">
+                <h1>Pollution Reduction Analytics</h1>
+                <p>Environmental impact of AI-optimized traffic management</p>
+            </div>
+            
+            <div class="summary-stats">
+                <div class="stat-card">
+                    <h3>23%</h3>
+                    <p>CO₂ Emission Reduction</p>
+                </div>
+                <div class="stat-card">
+                    <h3>31%</h3>
+                    <p>NOₓ Emission Reduction</p>
+                </div>
+                <div class="stat-card">
+                    <h3>19%</h3>
+                    <p>Fuel Consumption Reduction</p>
+                </div>
+                <div class="stat-card">
+                    <h3>12%</h3>
+                    <p>Noise Pollution Reduction</p>
+                </div>
+            </div>
+            
+            <div class="dashboard">
+                <div class="chart-container full-width">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Monthly Emission Reduction</h2>
+                    </div>
+                    <canvas id="emissionReductionChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Pollution by Traffic Area</h2>
+                    </div>
+                    <canvas id="pollutionByAreaChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Pollution Reduction by Time of Day</h2>
+                    </div>
+                    <canvas id="pollutionByTimeChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <h3 class="chart-title">Annual Pollution Reduction Metrics</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pollutant</th>
+                            <th>Before AI (tons)</th>
+                            <th>After AI (tons)</th>
+                            <th>Reduction</th>
+                            <th>Equivalent to</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Carbon Dioxide (CO₂)</td>
+                            <td>125,000</td>
+                            <td>96,250</td>
+                            <td>28,750 (23%)</td>
+                            <td>Planting 1.3M trees</td>
+                        </tr>
+                        <tr>
+                            <td>Nitrogen Oxides (NOₓ)</td>
+                            <td>8,200</td>
+                            <td>5,658</td>
+                            <td>2,542 (31%)</td>
+                            <td>Taking 180,000 cars off roads</td>
+                        </tr>
+                        <tr>
+                            <td>Particulate Matter (PM2.5)</td>
+                            <td>1,850</td>
+                            <td>1,498</td>
+                            <td>352 (19%)</td>
+                            <td>5,800 fewer respiratory cases</td>
+                        </tr>
+                        <tr>
+                            <td>Carbon Monoxide (CO)</td>
+                            <td>12,600</td>
+                            <td>10,332</td>
+                            <td>2,268 (18%)</td>
+                            <td>Reduced cardiovascular impact</td>
+                        </tr>
+                        <tr>
+                            <td>Sulfur Dioxide (SO₂)</td>
+                            <td>3,200</td>
+                            <td>2,688</td>
+                            <td>512 (16%)</td>
+                            <td>Decreased acid rain potential</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Response Page -->
+    <div id="emergency-page" class="page">
+        <div class="container">
+            <div class="header">
+                <h1>Emergency Response Impact</h1>
+                <p>Measuring lifesaving potential of priority routing for emergency vehicles</p>
+            </div>
+            
+            <div class="summary-stats">
+                <div class="stat-card">
+                    <h3>41%</h3>
+                    <p>Reduction in Emergency Response Time</p>
+                </div>
+                <div class="stat-card">
+                    <h3>238</h3>
+                    <p>Estimated Lives Saved Annually</p>
+                </div>
+                <div class="stat-card">
+                    <h3>57%</h3>
+                    <p>Increased On-Time Arrival Rate</p>
+                </div>
+                <div class="stat-card">
+                    <h3>3.2 min</h3>
+                    <p>Average Time Saved Per Response</p>
+                </div>
+            </div>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="openTab('emergency-stats')">Statistics</button>
+                <button class="tab-btn" onclick="openTab('emergency-cases')">Case Types</button>
+                <button class="tab-btn" onclick="openTab('emergency-coverage')">Coverage Map</button>
+            </div>
+            
+            <div id="emergency-stats" class="tab-content active">
+                <div class="table-container">
+                    <h3 class="chart-title">Emergency Response Improvement Statistics</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Incident Type</th>
+                                <th>Response Time Before AI (min)</th>
+                                <th>Response Time After AI (min)</th>
+                                <th>Improvement</th>
+                                <th>Lives Saved Estimate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Cardiac Arrest</td>
+                                <td>8.7</td>
+                                <td>5.1</td>
+                                <td>3.6 min (41%)</td>
+                                <td>96</td>
+                            </tr>
+                            <tr>
+                                <td>Stroke</td>
+                                <td>9.2</td>
+                                <td>5.4</td>
+                                <td>3.8 min (41%)</td>
+                                <td>52</td>
+                            </tr>
+                            <tr>
+                                <td>Severe Trauma</td>
+                                <td>10.1</td>
+                                <td>6.3</td>
+                                <td>3.8 min (38%)</td>
+                                <td>43</td>
+                            </tr>
+                            <tr>
+                                <td>Respiratory Failure</td>
+                                <td>8.5</td>
+                                <td>5.0</td>
+                                <td>3.5 min (41%)</td>
+                                <td>38</td>
+                            </tr>
+                            <tr>
+                                <td>Fire Response</td>
+                                <td>7.8</td>
+                                <td>4.6</td>
+                                <td>3.2 min (41%)</td>
+                                <td>9</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="chart-container full-width">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Emergency Response Improvement Over Time</h2>
+                    </div>
+                    <canvas id="emergencyResponseChart"></canvas>
+                </div>
+            </div>
+            
+            <div id="emergency-cases" class="tab-content">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Emergency Cases by Type</h2>
+                    </div>
+                    <canvas id="emergencyCasesChart"></canvas>
+                </div>
+                <div class="success-story">
+                    <h3>Featured Case Study: North Hospital District</h3>
+                    <p>North Hospital District implemented AI-driven traffic management for emergency vehicles in June 2024. Within the first month, average response times decreased from 9.3 minutes to 5.5 minutes.</p>
+                    <div class="testimonial">
+                        "For cardiac arrest cases, every minute counts. The 3.8 minutes we're saving with the new AI system translates directly to lives saved and improved outcomes for our patients." - Dr. Sarah Chen, Emergency Medicine Director
+                    </div>
+                </div>
+            </div>
+            
+            <div id="emergency-coverage" class="tab-content">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Response Time Coverage</h2>
+                    </div>
+                    <canvas id="coverageChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Monthly Lives Saved Estimate</h2>
+                    </div>
+                    <canvas id="livesSavedChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Impact Page -->
+    <div id="health-page" class="page">
+        <div class="container">
+            <div class="header">
+                <h1>Health Impact Analysis</h1>
+                <p>Evaluating the health benefits of improved traffic management and reduced pollution</p>
+            </div>
+            
+            <div class="summary-stats">
+                <div class="stat-card">
+                    <h3>18%</h3>
+                    <p>Reduction in Respiratory-Related Hospital Visits</p>
+                </div>
+                <div class="stat-card">
+                    <h3>12%</h3>
+                    <p>Decrease in Asthma Attacks</p>
+                </div>
+                <div class="stat-card">
+                    <h3>8%</h3>
+                    <p>Reduction in Cardiovascular Events</p>
+                </div>
+                <div class="stat-card">
+                    <h3>15%</h3>
+                    <p>Lower Stress-Related Health Issues</p>
+                </div>
+            </div>
+            
+            <div class="dashboard">
+                <div class="chart-container full-width">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Health Incidents Before vs After AI Implementation</h2>
+                    </div>
+                    <canvas id="healthIncidentsChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Respiratory Conditions by Area</h2>
+                    </div>
+                    <canvas id="respiratoryConditionsChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h2 class="chart-title">Estimated Healthcare Cost Savings</h2>
+                    </div>
+                    <canvas id="healthcareSavingsChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <h3 class="chart-title">Annual Health Impact Metrics</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Health Condition</th>
+                            <th>Before AI (cases)</th>
+                            <th>After AI (cases)</th>
+                            <th>Reduction</th>
+                            <th>Healthcare Cost Savings</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Asthma Exacerbations</td>
+                            <td>4,250</td>
+                            <td>3,740</td>
+                            <td>510 (12%)</td>
+                            <td>$1.28 million</td>
+                        </tr>
+                        <tr>
+                            <td>COPD Complications</td>
+                            <td>1,830</td>
+                            <td>1,573</td>
+                            <td>257 (14%)</td>
+                            <td>$2.32 million</td>
+                        </tr>
+                        <tr>
+                            <td>Cardiovascular Events</td>
+                            <td>2,150</td>
+                            <td>1,978</td>
+                            <td>172 (8%)</td>
+                            <td>$3.44 million</td>
+                        </tr>
+                        <tr>
+                            <td>Traffic-Related Injuries</td>
+                            <td>860</td>
+                            <td>688</td>
+                            <td>172 (20%)</td>
+                            <td>$5.16 million</td>
+                        </tr>
+                        <tr>
+                            <td>Stress-Related Conditions</td>
+                            <td>3,270</td>
+                            <td>2,780</td>
+                            <td>490 (15%)</td>
+                            <td>$1.47 million</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Economic Benefits Page -->
+    <div id="economic-page" class="page">
+        <div class="container">
+            <div class="header">
+                <h1>Economic Benefits</h1>
+                <p>Quantifying the financial impact of AI-driven traffic management</p>
+            </div>
+            
+            <div class="summary-stats">
+                <div class="stat-card">
+                    <h3>$42.7M</h3>
+                    <p>Annual Fuel Cost Savings</p>
+                </div>
+                <div class="stat-card">
+                    <h3>$86.2M</h3>
+                    <p>Productivity Hours Recovered</p>
+                </div>
+                <div class="stat-card">
+                    <h3>$13.6M</h3>
+                    <p>Healthcare Cost Reduction</p>
+                </div>
+                <div class="stat-card">
+                    <h3>$18.1M</h3>
+                    <p>Reduced Vehicle Maintenance</p>
+                </div>
+            </div>
+            
+            <div class="chart-container full-width">
+                <div class="chart-header">
+                    <h2 class="chart-title">Economic Impact Breakdown</h2>
+                </div>
+                <canvas id="economicImpactChart"></canvas>
+            </div>
+            
+            <div class="impact-grid">
+                <div class="impact-card">
+                    <h3><span>1</span> Fuel Efficiency</h3>
+                    <p>Reduced idle time and smoother traffic flow resulted in significant fuel savings across the city.</p>
+                    <p>Average driver saves <span class="economic-benefit">126 gallons</span> of fuel annually.</p>
+                </div>
+                <div class="impact-card">
+                    <h3><span>2</span> Time Savings</h3>
+                    <p>Reduced commute times translate directly to productivity improvements for businesses.</p>
+                    <p>Average commuter regains <span class="economic-benefit">72 hours</span> annually.</p>
+                </div>
+                <div class="impact-card">
+                    <h3><span>3</span> Business Impacts</h3>
+                    <p>Improved logistics and delivery efficiency for local businesses.</p>
+                    <p>Average <span class="economic-benefit">18% increase</span> in on-time deliveries.</p>
+                </div>
+                <div class="impact-card">
+                    <h3><span>4</span> Property Values</h3>
+                    <p>Areas with reduced congestion and improved air quality have seen property value increases.</p>
+                    <p>Average increase of <span class="economic-benefit">3.2%</span> in affected neighborhoods.</p>
+                </div>
+            </div>
+            
+            <div class="chart-container full-width">
+                <div class="chart-header">
+                    <h2 class="chart-title">ROI Analysis - 5 Year Projection</h2>
+                </div>
+                <canvas id="roiAnalysisChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to show selected page
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            document.getElementById(pageId).classList.add('active');
+            document.querySelector(`[onclick="showPage('${pageId}')"]`).classList.add('active');
+        }
+
+        // Function to open tabs
+        function openTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`[onclick="openTab('${tabId}')"]`).classList.add('active');
+        }
+
+        // Generate random data
+        function getRandomData(min, max, count) {
+            return Array.from({length: count}, () => Math.floor(Math.random() * (max - min + 1)) + min);
+        }
+
+        // Months labels for x-axis
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const timeOfDay = ['6AM', '8AM', '10AM', '12PM', '2PM', '4PM', '6PM', '8PM', '10PM'];
+        const areas = ['Downtown', 'Business District', 'Residential Area', 'Industrial Zone', 'School Zones'];
+        const years = ['2021', '2022', '2023', '2024', '2025 (Projected)'];
+
+        // Chart colors
+        const colors = {
+            blue: 'rgba(54, 162, 235, 0.7)',
+            blueBorder: 'rgba(54, 162, 235, 1)',
+            green: 'rgba(75, 192, 192, 0.7)',
+            greenBorder: 'rgba(75, 192, 192, 1)',
+            orange: 'rgba(255, 159, 64, 0.7)',
+            orangeBorder: 'rgba(255, 159, 64, 1)',
+           // Continuing the colors object
+red: 'rgba(255, 99, 132, 0.7)',
+redBorder: 'rgba(255, 99, 132, 1)',
+purple: 'rgba(153, 102, 255, 0.7)',
+purpleBorder: 'rgba(153, 102, 255, 1)'
+};
+
+// Traffic Flow Comparison Chart
+const trafficFlowChart = new Chart(
+    document.getElementById('trafficFlowChart'),
+    {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'Before AI',
+                    data: getRandomData(300, 500, 12),
+                    backgroundColor: colors.red,
+                    borderColor: colors.redBorder,
+                    borderWidth: 2,
+                    tension: 0.3
+                },
+                {
+                    label: 'After AI',
+                    data: getRandomData(150, 350, 12),
+                    backgroundColor: colors.green,
+                    borderColor: colors.greenBorder,
+                    borderWidth: 2,
+                    tension: 0.3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Vehicles per hour'
+                    },
+                    beginAtZero: true
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Month'
+                    }
+                }
+            }
+        }
+    }
+);
+
+// Waiting Time Chart
+const waitingTimeChart = new Chart(
+    document.getElementById('waitingTimeChart'),
+    {
+        type: 'bar',
+        data: {
+            labels: ['Morning Rush', 'Midday', 'Evening Rush', 'Night'],
+            datasets: [
+                {
+                    label: 'Before AI',
+                    data: [12, 8, 15, 5],
+                    backgroundColor: colors.blue,
+                    borderColor: colors.blueBorder,
+                    borderWidth: 1
+                },
+                {
+                    label: 'After AI',
+                    data: [7, 5, 9, 3],
+                    backgroundColor: colors.green,
+                    borderColor: colors.greenBorder,
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Minutes'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    }
+);
+
+// Peak Hour Traffic Distribution Chart
+const peakHourChart = new Chart(
+    document.getElementById('peakHourChart'),
+    {
+        type: 'line',
+        data: {
+            labels: timeOfDay,
+            datasets: [
+                {
+                    label: 'Before AI',
+                    data: [250, 480, 320, 290, 310, 350, 520, 380, 210],
+                    backgroundColor: colors.orange,
+                    borderColor: colors.orangeBorder,
+                    borderWidth: 2,
+                    tension: 0.2,
+                    fill: false
+                },
+                {
+                    label: 'After AI',
+                    data: [230, 380, 290, 270, 300, 320, 410, 340, 200],
+                    backgroundColor: colors.green,
+                    borderColor: colors.greenBorder,
+                    borderWidth: 2,
+                    tension: 0.2,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Traffic Volume'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    }
+);
+
+// Emission Reduction Chart
+const emissionReductionChart = new Chart(
+    document.getElementById('emissionReductionChart'),
+    {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'CO₂ Reduction',
+                    data: getRandomData(15, 30, 12),
+                    backgroundColor: colors.green,
+                    borderColor: colors.greenBorder,
+                    borderWidth: 2,
+                    tension: 0.4
+                },
+                {
+                    label: 'NOₓ Reduction',
+                    data: getRandomData(20, 40, 12),
+                    backgroundColor: colors.blue,
+                    borderColor: colors.blueBorder,
+                    borderWidth: 2,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Percent Reduction'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    }
+);
+
+// Pollution by Area Chart
+const pollutionByAreaChart = new Chart(
+    document.getElementById('pollutionByAreaChart'),
+    {
+        type: 'bar',
+        data: {
+            labels: areas,
+            datasets: [
+                {
+                    label: 'Before AI',
+                    data: [85, 90, 65, 95, 75],
+                    backgroundColor: colors.red,
+                    borderColor: colors.redBorder,
+                    borderWidth: 1
+                },
+                {
+                    label: 'After AI',
+                    data: [60, 65, 50, 70, 55],
+                    backgroundColor: colors.green,
+                    borderColor: colors.greenBorder,
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Pollution Index'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    }
+);
+
+// Pollution by Time Chart
+const pollutionByTimeChart = new Chart(
+    document.getElementById('pollutionByTimeChart'),
+    {
+        type: 'radar',
+        data: {
+            labels: timeOfDay,
+            datasets: [
+                {
+                    label: 'Before AI',
+                    data: [65, 85, 70, 60, 65, 75, 95, 80, 60],
+                    backgroundColor: colors.red,
+                    borderColor: colors.redBorder,
+                    borderWidth: 1
+                },
+                {
+                    label: 'After AI',
+                    data: [50, 65, 55, 45, 50, 60, 70, 60, 45],
+                    backgroundColor: colors.green,
+                    borderColor: colors.greenBorder,
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                r: {
+                    beginAtZero: true
+                }
+            }
+        }
+    }
+);
+
+// Emergency Response Chart
+const emergencyResponseChart = new Chart(
+    document.getElementById('emergencyResponseChart'),
+    {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'Before AI Implementation',
+                    data: [9.2, 9.4, 9.1, 9.3, 9.5, 9.6, 9.8, 9.7, 9.3, 9.2, 9.4, 9.3],
+                    backgroundColor: colors.red,
+                    borderColor: colors.redBorder,
+                    borderWidth: 2,
+                    tension: 0.2
+                },
+                {
+                    label: 'After AI Implementation',
+                    data: [9.1, 8.7, 7.9, 6.8, 5.9, 5.4, 5.3, 5.4, 5.3, 5.2, 5.1, 5.0],
+                    backgroundColor: colors.green,
+                    borderColor: colors.greenBorder,
+                    borderWidth: 2,
+                    tension: 0.2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Average Response Time (minutes)'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    }
+);
+
+// Emergency Cases Chart
+const emergencyCasesChart = new Chart(
+    document.getElementById('emergencyCasesChart'),
+    {
+        type: 'pie',
+        data: {
+            labels: ['Cardiac Arrest', 'Stroke', 'Severe Trauma', 'Respiratory Failure', 'Fire Response', 'Other'],
+            datasets: [
+                {
+                    data: [25, 18, 15, 14, 8, 20],
+                    backgroundColor: [
+                        colors.red,
+                        colors.blue,
+                        colors.orange,
+                        colors.green,
+                        colors.purple,
+                        'rgba(200, 200, 200, 0.7)'
+                    ],
+                    borderColor: [
+                        colors.redBorder,
+                        colors.blueBorder,
+                        colors.orangeBorder,
+                        colors.greenBorder,
+                        colors.purpleBorder,
+                        'rgba(200, 200, 200, 1)'
+                    ],
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                }
+            }
+        }
+    }
+);
+
+// Coverage Chart
+const coverageChart = new Chart(
+    document.getElementById('coverageChart'),
+    {
+        type: 'bar',
+        data: {
+            labels: areas,
+            datasets: [
+                {
+                    label: 'Response within 5 min (Before AI)',
+                    data: [68, 72, 58, 52, 76],
+                    backgroundColor: colors.blue,
+                    borderColor: colors.blueBorder,
+                    borderWidth: 1
+                },
+                {
+                    label: 'Response within 5 min (After AI)',
+                    data: [94, 96, 87, 81, 97],
+                    backgroundColor: colors.green,
+                    borderColor: colors.greenBorder,
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Coverage Percentage'
+                    },
+                    min: 0,
+                    max: 100
+                }
+            }
+        }
+    }
+);
+
+// Lives Saved Chart
+const livesSavedChart = new Chart(
+    document.getElementById('livesSavedChart'),
+    {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [
+                {
+                    label: 'Estimated Lives Saved',
+                    data: [18, 16, 21, 19, 25, 22, 24, 21, 19, 18, 17, 18],
+                    backgroundColor: colors.green,
+                    borderColor: colors.greenBorder,
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Lives Saved'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    }
+);
+
+// Health Incidents Chart
+const healthIncidentsChart = new Chart(
+    document.getElementById('healthIncidentsChart'),
+    {
+        type: 'bar',
+        data: {
+            labels: ['Asthma', 'COPD', 'Cardiovascular', 'Allergies', 'Mental Health'],
+            datasets: [
+                {
+                    label: 'Before AI',
+                    data: [425, 183, 215, 397, 327],
+                    backgroundColor: colors.red,
+                    borderColor: colors.redBorder,
+                    borderWidth: 1
+                },
+                {
+                    label: 'After AI',
+                    data: [374, 157, 198, 341, 278],
+                    backgroundColor: colors.green,
+                    borderColor: colors.greenBorder,
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Incidents per 10,000 people'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    }
+);
+
+// Respiratory Conditions Chart
+const respiratoryConditionsChart = new Chart(
+    document.getElementById('respiratoryConditionsChart'),
+    {
+        type: 'radar',
+        data: {
+            labels: areas,
+            datasets: [
+                {
+                    label: 'Before AI',
+                    data: [68, 72, 54, 82, 62],
+                    backgroundColor: colors.red,
+                    borderColor: colors.redBorder,
+                    borderWidth: 1
+                },
+                {
+                    label: 'After AI',
+                    data: [59, 62, 48, 68, 53],
+                    backgroundColor: colors.green,
+                    borderColor: colors.greenBorder,
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    }
+);
+
+// Healthcare Savings Chart
+const healthcareSavingsChart = new Chart(
+    document.getElementById('healthcareSavingsChart'),
+    {
+        type: 'doughnut',
+        data: {
+            labels: ['Asthma', 'COPD', 'Cardiovascular', 'Traffic Injuries', 'Stress-Related'],
+            datasets: [
+                {
+                    data: [1.28, 2.32, 3.44, 5.16, 1.47],
+                    backgroundColor: [
+                        colors.red,
+                        colors.blue,
+                        colors.orange,
+                        colors.green,
+                        colors.purple
+                    ],
+                    borderColor: [
+                        colors.redBorder,
+                        colors.blueBorder,
+                        colors.orangeBorder,
+                        colors.greenBorder,
+                        colors.purpleBorder
+                    ],
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: $${context.raw} million`;
+                        }
+                    }
+                }
+            }
+        }
+    }
+);
+
+// Economic Impact Chart
+const economicImpactChart = new Chart(
+    document.getElementById('economicImpactChart'),
+    {
+        type: 'bar',
+        data: {
+            labels: ['Fuel Savings', 'Productivity Gains', 'Healthcare Costs', 'Vehicle Maintenance', 'Accident Reduction', 'Environmental Impact'],
+            datasets: [
+                {
+                    label: 'Annual Economic Benefit (Millions $)',
+                    data: [42.7, 86.2, 13.6, 18.1, 22.4, 8.9],
+                    backgroundColor: [
+                        colors.blue,
+                        colors.green,
+                        colors.red,
+                        colors.orange,
+                        colors.purple,
+                        'rgba(75, 192, 150, 0.7)'
+                    ],
+                    borderColor: [
+                        colors.blueBorder,
+                        colors.greenBorder,
+                        colors.redBorder,
+                        colors.orangeBorder,
+                        colors.purpleBorder,
+                        'rgba(75, 192, 150, 1)'
+                    ],
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Millions $'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    }
+);
+
+// ROI Analysis Chart
+const roiAnalysisChart = new Chart(
+    document.getElementById('roiAnalysisChart'),
+    {
+        type: 'line',
+        data: {
+            labels: years,
+            datasets: [
+                {
+                    label: 'Implementation Cost',
+                    data: [18.5, 12.3, 8.2, 5.4, 4.8],
+                    backgroundColor: colors.red,
+                    borderColor: colors.redBorder,
+                    borderWidth: 2,
+                    tension: 0.3
+                },
+                {
+                    label: 'Annual Benefits',
+                    data: [0, 32.7, 85.6, 172.3, 191.9],
+                    backgroundColor: colors.green,
+                    borderColor: colors.greenBorder,
+                    borderWidth: 2,
+                    tension: 0.3
+                },
+                {
+                    label: 'Cumulative Net Benefit',
+                    data: [-18.5, 1.9, 79.3, 246.2, 433.3],
+                    backgroundColor: colors.blue,
+                    borderColor: colors.blueBorder,
+                    borderWidth: 3,
+                    tension: 0.3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Millions $'
+                    }
+                }
+            }
+        }
+    }
+);
+</script>
+</body>
+</html>
