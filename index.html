@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrafficFlowX | By Hustler 27</title>
+    <style>
+        :root {
+            --deep-blue: #002a54;
+            --navy-blue: #1a2a6c;
+            --sky-blue: #00bfff;
+            --traffic-orange: #ff6600;
+            --light-gray: #f1f1f1;
+            --dark-gray: #333333;
+            --white: #ffffff;
+            --team-color: #ff5722; /* Hustler 27 accent color */
+            --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: linear-gradient(rgba(0, 42, 84, 0.85), rgba(0, 42, 84, 0.9)), 
+                              url('https://images.unsplash.com/photo-1570898310277-e14984a74633');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            line-height: 1.6;
+        }
+
+        /* Team Badge */
+        .team-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: var(--team-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .team-badge i {
+            font-size: 1rem;
+        }
+
+        /* Problem Statement Banner */
+        .problem-banner {
+            background: rgba(255, 102, 0, 0.9);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            font-weight: 500;
+            border-bottom: 2px solid white;
+            position: relative;
+        }
+
+        .problem-banner h2 {
+            margin-bottom: 0.5rem;
+            font-size: 1.4rem;
+        }
+
+        .stats-grid {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        header {
+            padding: 2.5rem 1rem;
+            text-align: center;
+            background-color: rgba(0, 42, 84, 0.92);
+            color: var(--white);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: var(--team-color);
+            border-radius: 3px;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(to right, var(--white), var(--team-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            color: var(--sky-blue);
+            font-weight: 300;
+            max-width: 700px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem 1rem;
+        }
+
+        .solution-section {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 900px;
+            margin-bottom: 3rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            border-top: 4px solid var(--team-color);
+        }
+
+        .solution-section h2 {
+            color: var(--navy-blue);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 1.8rem;
+        }
+
+        .solution-section h2 span {
+            color: var(--team-color);
+        }
+
+        .solution-section p {
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            border-left: 3px solid var(--team-color);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-card h3 {
+            color: var(--navy-blue);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2.5rem;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .btn {
+            background-color: var(--navy-blue);
+            color: var(--white);
+            border: none;
+            padding: 2rem 1.5rem;
+            font-size: 1.25rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0));
+            z-index: -1;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .btn:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover::before {
+            opacity: 1;
+        }
+
+        .btn i {
+            font-size: 3.2rem;
+            margin-bottom: 1.25rem;
+            transition: var(--transition);
+        }
+
+        .btn:hover i {
+            transform: scale(1.1);
+        }
+
+        .btn-text {
+            transition: var(--transition);
+        }
+
+        .btn:hover .btn-text {
+            letter-spacing: 0.5px;
+        }
+
+        /* Button Styles */
+        .btn-simulation {
+            background: linear-gradient(135deg, var(--navy-blue), #2a3a8c);
+        }
+
+        .btn-detection {
+            background: linear-gradient(135deg, #20cfff, #00a8e8);
+        }
+
+        .btn-analytics {
+            background: linear-gradient(135deg, var(--traffic-orange), #ff8533);
+        }
+
+        .btn-challan {
+            background: linear-gradient(135deg, var(--dark-gray), #555555);
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.75rem;
+            background-color: rgba(0, 42, 84, 0.92);
+            color: var(--white);
+            font-size: 1rem;
+            backdrop-filter: blur(8px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .team-footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .team-logo {
+            background: var(--team-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            h1 {
+                font-size: 2.4rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .button-grid {
+                gap: 1.75rem;
+            }
+
+            .solution-section {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .button-grid {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+                gap: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+            }
+            
+            .btn {
+                min-height: 140px;
+                padding: 1.75rem 1.25rem;
+            }
+            
+            .btn i {
+                font-size: 2.8rem;
+            }
+
+            .problem-banner h2 {
+                font-size: 1.2rem;
+            }
+
+            .stat-item {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .stats-grid {
+                gap: 0.75rem;
+            }
+
+            .team-badge {
+                top: 0.5rem;
+                left: 0.5rem;
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .button-grid {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        .btn:nth-child(1) { animation-delay: 0.1s; }
+        .btn:nth-child(2) { animation-delay: 0.2s; }
+        .btn:nth-child(3) { animation-delay: 0.3s; }
+        .btn:nth-child(4) { animation-delay: 0.4s; }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="team-badge">
+        <i class="fas fa-users"></i>
+        Hustler 27
+    </div>
+
+    <div class="problem-banner">
+        <h2>Urban Traffic Crisis: 30% of commute time wasted in congestion</h2>
+        <div class="stats-grid">
+            <div class="stat-item"><i class="fas fa-clock"></i> 54 hours/year lost per driver</div>
+            <div class="stat-item"><i class="fas fa-gas-pump"></i> 40% extra fuel consumption</div>
+            <div class="stat-item"><i class="fas fa-lungs"></i> 25% of urban pollution</div>
+        </div>
+    </div>
+
+    <header>
+        <h1>Traffic Management</h1>
+        <p class="subtitle">AI-powered traffic optimization by Hustler 27</p>
+    </header>
+
+    <main>
+        <section class="solution-section">
+            <h2>The <span>Hustler 27</span> Difference</h2>
+            <p>Our team of innovators has developed a next-generation traffic management system that doesn't just react to congestion—it predicts and prevents it. Using cutting-edge machine learning algorithms processing real-time data from IoT sensors and traffic cameras, we deliver dynamic solutions that adapt to your city's unique patterns.</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3><i class="fas fa-brain" style="color: var(--team-color);"></i> Predictive Intelligence</h3>
+                    <p>Our proprietary algorithms forecast traffic flows with 92% accuracy, enabling proactive signal adjustments before congestion forms.</p>
+                </div>
+                <div class="feature-card">
+                    <h3><i class="fas fa-bolt" style="color: var(--team-color);"></i> Dynamic Response</h3>
+                    <p>Real-time processing of traffic patterns reduces intersection wait times by 35% compared to traditional systems.</p>
+                </div>
+                <div class="feature-card">
+                    <h3><i class="fas fa-shield-alt" style="color: var(--team-color);"></i> Safety First</h3>
+                    <p>Automated incident detection and emergency vehicle prioritization cuts response times by 25%, saving lives.</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="button-grid">
+            <button class="btn btn-simulation" onclick="navigate('simulation')">
+                <i class="fas fa-project-diagram"></i>
+                <span class="btn-text">System Demo</span>
+            </button>
+            <button class="btn btn-detection" onclick="navigate('detection')">
+                <i class="fas fa-robot"></i>
+                <span class="btn-text">AI Detection</span>
+            </button>
+            <button class="btn btn-analytics" onclick="navigate('analytics')">
+                <i class="fas fa-chart-line"></i>
+                <span class="btn-text">Live Analytics</span>
+            </button>
+            <button class="btn btn-challan" onclick="navigate('./payChallan.html')">
+                <i class="fas fa-traffic-light"></i>
+                <span class="btn-text">Pay Challan</span>
+            </button>
+        </div>
+    </main>
+
+    <footer>
+        <p>Smart Traffic Management System</p>
+        <div class="copyright">
+            &copy; 2025 Smart Traffic AI. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        function navigate(page) {
+            // Add smooth transition before navigation
+            document.body.style.opacity = '0.8';
+            document.body.style.transition = 'opacity 0.3s ease';
+            
+            setTimeout(() => {
+                // Remove the alert and actually navigate
+                window.location.href = page;
+            }, 300);
+        }
+        
+        // Add subtle parallax effect to background
+        window.addEventListener('scroll', function() {
+            const scrollPosition = window.pageYOffset;
+            document.body.style.backgroundPositionY = `${scrollPosition * 0.5}px`;
+        });
+
+        // Team badge animation
+        const teamBadge = document.querySelector('.team-badge');
+        teamBadge.addEventListener('mouseover', () => {
+            teamBadge.style.transform = 'scale(1.05)';
+            teamBadge.style.boxShadow = '0 6px 12px rgba(0,0,0,0.3)';
+        });
+        teamBadge.addEventListener('mouseout', () => {
+            teamBadge.style.transform = 'scale(1)';
+            teamBadge.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+        });
+    </script>
+</body>
+</html>
