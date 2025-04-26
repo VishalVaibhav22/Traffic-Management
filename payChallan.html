@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pay Traffic Challan | TrafficFlowX</title>
+    <style>
+        :root {
+            --navy-blue: #1a2a6c;
+            --sky-blue: #00bfff;
+            --traffic-orange: #ff6600;
+            --light-gray: #f5f7fa;
+            --dark-gray: #333333;
+            --white: #ffffff;
+            --success-green: #28a745;
+            --error-red: #dc3545;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--navy-blue);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            width: 100%;
+        }
+
+        .challan-card {
+            background-color: var(--white);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--navy-blue);
+        }
+
+        input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--sky-blue);
+            box-shadow: 0 0 0 3px rgba(0, 191, 255, 0.2);
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: var(--navy-blue);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            background-color: #0f1c4d;
+            transform: translateY(-2px);
+        }
+
+        .btn-check {
+            background-color: var(--traffic-orange);
+        }
+
+        .btn-check:hover {
+            background-color: #e05c00;
+        }
+
+        .btn-pay {
+            background-color: var(--success-green);
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+
+        .btn-pay:hover {
+            background-color: #218838;
+        }
+
+        .fine-details {
+            display: none;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid var(--traffic-orange);
+        }
+
+        .fine-amount {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--traffic-orange);
+            margin: 1rem 0;
+        }
+
+        .fine-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .fine-item:last-child {
+            border-bottom: none;
+        }
+
+        .payment-success {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+            background-color: #e8f5e9;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+
+        .payment-success i {
+            color: var(--success-green);
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .challan-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <h1>Pay Your Traffic Challan</h1>
+        <p>Fast and secure online traffic fine payment</p>
+    </header>
+
+    <div class="container">
+        <div class="challan-card">
+            <div class="form-group">
+                <label for="vehicle-number">Vehicle Number</label>
+                <input type="text" id="vehicle-number" placeholder="e.g. DL01AB1234" required>
+                <small>Enter your vehicle registration number without spaces</small>
+            </div>
+            
+            <button class="btn btn-check" id="check-fine">Check Fine</button>
+            
+            <div class="fine-details" id="fine-details">
+                <h3>Fine Details</h3>
+                <div class="fine-item">
+                    <span>Violation:</span>
+                    <span>Signal Jumping</span>
+                </div>
+                <div class="fine-item">
+                    <span>Date:</span>
+                    <span id="violation-date">15 Oct 2023</span>
+                </div>
+                <div class="fine-item">
+                    <span>Location:</span>
+                    <span>MG Road, Delhi</span>
+                </div>
+                
+                <div class="fine-amount" id="fine-amount">₹500</div>
+                
+                <button class="btn btn-pay" id="pay-now">Pay Now</button>
+            </div>
+            
+            <div class="payment-success" id="payment-success">
+                <i class="fas fa-check-circle"></i>
+                <h3>Payment Successful!</h3>
+                <p>Your payment of <strong id="paid-amount">₹500</strong> has been received.</p>
+                <p>Transaction ID: <span id="transaction-id">TXN12345678</span></p>
+                <button class="btn" onclick="window.location.reload()">Check Another Vehicle</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkFineBtn = document.getElementById('check-fine');
+            const payNowBtn = document.getElementById('pay-now');
+            const fineDetails = document.getElementById('fine-details');
+            const paymentSuccess = document.getElementById('payment-success');
+            const vehicleNumberInput = document.getElementById('vehicle-number');
+            const violationDate = document.getElementById('violation-date');
+            const fineAmount = document.getElementById('fine-amount');
+            const paidAmount = document.getElementById('paid-amount');
+            
+            // Sample fine data (in real app, this would come from API)
+            const fines = {
+                'DL01AB1234': { amount: 500, date: '15 Oct 2023', violation: 'Signal Jumping' },
+                'MH02CD5678': { amount: 1000, date: '20 Oct 2023', violation: 'Over Speeding' },
+                'KA03EF9012': { amount: 2000, date: '25 Oct 2023', violation: 'No Parking' }
+            };
+            
+            // Set today's date as default violation date
+            const today = new Date();
+            violationDate.textContent = today.toLocaleDateString('en-IN', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric' 
+            });
+            
+            checkFineBtn.addEventListener('click', function() {
+                const vehicleNumber = vehicleNumberInput.value.trim().toUpperCase();
+                
+                if (!vehicleNumber) {
+                    alert('Please enter a vehicle number');
+                    return;
+                }
+                
+                // Simulate API call with timeout
+                checkFineBtn.disabled = true;
+                checkFineBtn.textContent = 'Checking...';
+                
+                setTimeout(function() {
+                    checkFineBtn.disabled = false;
+                    checkFineBtn.textContent = 'Check Fine';
+                    
+                    // Check if vehicle exists in our dummy data
+                    if (fines[vehicleNumber]) {
+                        fineAmount.textContent = `₹${fines[vehicleNumber].amount}`;
+                        paidAmount.textContent = `₹${fines[vehicleNumber].amount}`;
+                        violationDate.textContent = fines[vehicleNumber].date;
+                        document.querySelector('.fine-item span:last-child').textContent = fines[vehicleNumber].violation;
+                    } else {
+                        // Default fine for unknown vehicles
+                        fineAmount.textContent = '₹500';
+                        paidAmount.textContent = '₹500';
+                    }
+                    
+                    // Show fine details
+                    fineDetails.style.display = 'block';
+                    
+                    // Generate random transaction ID
+                    document.getElementById('transaction-id').textContent = 'TXN' + 
+                        Math.floor(Math.random() * 1000000000);
+                    
+                }, 1500);
+            });
+            
+            payNowBtn.addEventListener('click', function() {
+                // Simulate payment processing
+                payNowBtn.disabled = true;
+                payNowBtn.textContent = 'Processing...';
+                
+                setTimeout(function() {
+                    // Show success message
+                    fineDetails.style.display = 'none';
+                    paymentSuccess.style.display = 'block';
+                    
+                    // Reset pay button (for demo purposes)
+                    setTimeout(function() {
+                        payNowBtn.disabled = false;
+                        payNowBtn.textContent = 'Pay Now';
+                    }, 2000);
+                    
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>
